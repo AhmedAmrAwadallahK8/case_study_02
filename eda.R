@@ -230,7 +230,7 @@ df_raw %>% ggplot(aes(x = YearsInCurrentRole, fill = Attrition)) + geom_density(
 
 #YearsSinceLastPromotion
 df_raw %>% ggplot(aes(x = Attrition, y = YearsSinceLastPromotion)) + geom_boxplot()
-df_raw %>% ggplot(aes(x = YearsSinceLastPromotion, fill = Attrition)) + geom_density()
+df_raw %>% ggplot(aes(x = YearsSinceLastPromotion, fill = Attrition)) + geom_density(alpha=0.5)
 
 #Not much of a difference
 
