@@ -184,6 +184,6 @@ CM_rep = confusionMatrix(table(pred_forest, test_tar[,]))
 CM_rep
 ?randomForest
 
-#Probably need to look into Anomaly Detection
+##Models are preforming ok. Need to optimize the upsampling and downsampling. Possibly with some randomization
 
 
