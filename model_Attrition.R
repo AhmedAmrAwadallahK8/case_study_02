@@ -182,6 +182,8 @@ forest = randomForest(x=train_fea, y=as.factor(train_tar$Attrition),
 pred_forest = predict(forest, test_fea)
 CM_rep = confusionMatrix(table(pred_forest, test_tar[,]))
 CM_rep
+
+pred_forest
 ?randomForest
 
 ##Models are preforming ok. Need to optimize the upsampling and downsampling. Possibly with some randomization

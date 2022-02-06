@@ -81,7 +81,7 @@ df_raw %>% ggplot(aes(y=MonthlyIncome, x=as.factor(JobLevel))) + geom_boxplot()
 #Strong Relationship Present
 
 #MI v JobRole
-df_raw %>% ggplot(aes(y=MonthlyIncome, x=as.factor(JobRole))) + geom_boxplot()
+df_raw %>% ggplot(aes(x=MonthlyIncome, y=as.factor(JobRole))) + geom_boxplot()
 #Strong Relationship Present
 
 #MI v JobSatisfaction
