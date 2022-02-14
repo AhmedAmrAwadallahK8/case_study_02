@@ -27,6 +27,8 @@ find_optimal_k2 = function(df, fea, tar, k_min, k_max, split = 0.8,
   #k_max: (Numeric) Maximum K value to test
   #s_num: (Numeric) How many samples to loop through
   #avg_loop: (Numeric) How many times to average per k
+  #rep_upsample: (Numeric) How many times to upsample the minority set
+  #perc_downsample: (Numeric) What fraction of majority class to include in model
   #title: Title for plot
   #Output
   #(int) Returns the K value with the highest accuracy
@@ -94,26 +96,28 @@ find_optimal_k2 = function(df, fea, tar, k_min, k_max, split = 0.8,
 }
 
 #Finds K within specified range that maximizes accuracy for given Dataset
-find_optimal_depth = function(df, fea, tar, k_min, k_max, split = 0.8,  
+find_optimal_depth = function(df, fea, tar, d_min, d_max, split = 0.8,  
                            s_num=10, avg_loop=5, rep_upsample = 3, perc_downsample = 0.7, 
-                           title = "K versus Accuracy for KNN Model"){
+                           title = "D versus Accuracy for Forest Model"){
   #Params:
   #df: (Data.Frame) Full Data set to be trained on
   #fea: (Vector of Strings) String of selected columns for features
   #tar: (Vector of Strings) String of selected columns for targets
   #Split: (Numeric) Sampling Split
-  #k_min: (Numeric) Minimum K value to test
-  #k_max: (Numeric) Maximum K value to test
+  #d_min: (Numeric) Minimum depth value to test
+  #d_max: (Numeric) Maximum depth value to test
   #s_num: (Numeric) How many samples to loop through
-  #avg_loop: (Numeric) How many times to average per k
+  #avg_loop: (Numeric) How many times to average per d
+  #rep_upsample: (Numeric) How many times to upsample the minority set
+  #perc_downsample: (Numeric) What fraction of majority class to include in model
   #title: Title for plot
   #Output
-  #(int) Returns the K value with the highest accuracy
+  #(int) Returns the d value with the highest accuracy
   
   #Setup Data Structures for loop logic and output
-  k_loop = k_max-k_min+1
-  acc_overall = numeric(k_loop)
-  k_vals = c(k_min:k_max)
+  d_loop = d_max-d_min+1
+  acc_overall = numeric(d_loop)
+  d_vals = c(d_min:d_max)
   
   #Loop For Every sample
   for(i in 1:s_num){
@@ -140,37 +144,37 @@ find_optimal_depth = function(df, fea, tar, k_min, k_max, split = 0.8,
     test_fea = test %>% select(contains(fea))
     test_tar = test %>% select(contains(tar))
     
-    #Loop for every K in range specified by parameters kmax-kmin
-    for(j in 1:k_loop){
-      k_current = k_vals[j]
+    #Loop for every d in range specified by parameters dmax-dmin
+    for(j in 1:d_loop){
+      d_current = d_vals[j]
       acc_vals_sample = c()
       acc = 0
       
-      #Loop multiple times for specified k and take average
-      for(k in 1:avg_loop){
+      #Loop multiple times for specified d and take average
+      for(d in 1:avg_loop){
         forest = randomForest(x=train_fea, y=as.factor(train_tar$Attrition),
-                              ntree = 1000, maxnodes = k_current)
+                              ntree = 1000, maxnodes = d_current)
         pred_forest = predict(forest, test_fea)
         CM_rep = confusionMatrix(table(pred_forest, test_tar[,]))
         acc = acc + CM_rep$byClass[11]
       }
       #Average across multiple trains
       acc_avg = acc/avg_loop
-      #Add the vector to the overall accruacy vector for all Ks
+      #Add the vector to the overall accruacy vector for all ds
       acc_overall[j] = acc_overall[j] + acc_avg
     }
   }
-  #Average all Ks by number of samples taken
+  #Average all ds by number of samples taken
   acc_overall_avg = acc_overall/s_num
   
-  #Find Optimal K
-  optimal_k = k_min + which.max(acc_overall_avg) - 1
+  #Find Optimal d
+  optimal_d = d_min + which.max(acc_overall_avg) - 1
   
   #Plot 
-  plot(k_vals, acc_overall_avg, main = title, type = 'l', col = "#DD1731", 
-       xlab = "K", ylab = "Balanced Accuracy", lwd=3)
-  abline(v = optimal_k, col="green", lwd=2)
+  plot(d_vals, acc_overall_avg, main = title, type = 'l', col = "#DD1731", 
+       xlab = "d", ylab = "Balanced Accuracy", lwd=3)
+  abline(v = optimal_d, col="green", lwd=2)
   
   
-  return(optimal_k)
+  return(optimal_d)
 }

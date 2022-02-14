@@ -170,6 +170,19 @@ optimal_d = find_optimal_depth(train_data, fea, tar,
                                2, 20, split = 0.888,  s_num=30, avg_loop=5, rep_upsample = rep_upsample, perc_downsample = perc_downsample,
                                title = "K versus Accuracy for Forest Model")
 
+#Split into Train/Validation set and test set 60 20 20 split
+tt_l = train_test_split(df_model_final_shuffled, splitPerc = 0.9)
+
+train_data = tt_l[[1]]
+test_data = tt_l[[2]]
+
+#SPecify Features and Target
+
+fea = c("Age_Norm", "MonthlyIncome_Norm", "TotalWorkingYears_Norm", 
+        "JobLevel_Norm", "OverTime_Yes", "OverTime_No",
+        "StockOptionLevel_Norm", "DistanceFromHome_Norm", "EnvironmentSatisfaction_Norm",
+        "MS_Single")
+tar = c("Attrition")
 
 perc_downsample = 0.7
 rep_upsample = 4
@@ -200,9 +213,60 @@ pred_forest = predict(forest, test_fea)
 CM_rep = confusionMatrix(table(pred_forest, test_tar[,]))
 CM_rep
 
-pred_forest
-?randomForest
 
-##Models are preforming ok. Need to optimize the upsampling and downsampling. Possibly with some randomization
+#Output Predictions
+df_comp = read.csv(file = 'C:\\Users\\amada\\OneDrive\\Desktop\\RStudioFiles\\Scripts\\SMU\\Term1\\DS6306\\CaseStudy2\\CaseStudy2CompSet_No_Attrition.csv')
+
+#Setup output Dataframe
+output = data.frame(ID = df_comp$ID)
+
+#Perform the same parameter adjustments we did before
+
+#Adjust OverTime such that its a dummy
+df_comp$OverTime_Yes = ifelse(df_comp$OverTime == "Yes", 1, 0)
+df_comp$OverTime_No = ifelse(df_comp$OverTime == "No", 1, 0)
+
+#Adjust MaritalStatus
+df_comp$MS_Single = ifelse(df_comp$MaritalStatus == "Single", 1, 0)
+df_comp$MS_Divorced = ifelse(df_comp$MaritalStatus == "Divorced", 1, 0)
+df_comp$MS_Married = ifelse(df_comp$MaritalStatus == "Married", 1, 0)
+
+
+#Normalize the other variables
+df_comp$Age_Norm = (df_comp$Age  - mean(df_comp$Age))/sd(df_comp$Age)
+df_comp$MonthlyIncome_Norm = (df_comp$MonthlyIncome  - mean(df_comp$MonthlyIncome))/sd(df_comp$MonthlyIncome)
+df_comp$TotalWorkingYears_Norm = (df_comp$TotalWorkingYears  - mean(df_comp$TotalWorkingYears))/sd(df_comp$TotalWorkingYears)
+df_comp$JobLevel_Norm = (df_comp$JobLevel  - mean(df_comp$JobLevel))/sd(df_comp$JobLevel)
+
+df_comp$StockOptionLevel_Norm = (df_comp$StockOptionLevel  - mean(df_comp$StockOptionLevel))/sd(df_comp$StockOptionLevel)
+df_comp$DistanceFromHome_Norm = (df_comp$DistanceFromHome  - mean(df_comp$DistanceFromHome))/sd(df_comp$DistanceFromHome)
+df_comp$EnvironmentSatisfaction_Norm = (df_comp$EnvironmentSatisfaction  - mean(df_comp$EnvironmentSatisfaction))/sd(df_comp$EnvironmentSatisfaction)
+
+#Setup Final Data State
+df_comp_final = df_comp %>% select("Age_Norm", "MonthlyIncome_Norm", "TotalWorkingYears_Norm", 
+                                     "JobLevel_Norm", "OverTime_Yes", "OverTime_No",
+                                     "StockOptionLevel_Norm", "DistanceFromHome_Norm", "EnvironmentSatisfaction_Norm",
+                                     "MS_Single", "MS_Divorced", "MS_Married")
+
+#Specify Features
+
+fea = c("Age_Norm", "MonthlyIncome_Norm", "TotalWorkingYears_Norm", 
+        "JobLevel_Norm", "OverTime_Yes", "OverTime_No",
+        "StockOptionLevel_Norm", "DistanceFromHome_Norm", "EnvironmentSatisfaction_Norm",
+        "MS_Single")
+
+
+#Create features for comp dataframe
+test_fea = df_comp_final %>% select(contains(fea))
+
+#Output predictions
+output$Attrition = predict(forest, test_fea)
+
+#Write to CSV
+write.csv(output,'Case2PredictionsAwadallah Attrition.csv', row.names = FALSE)
+
+
+
+
 
 

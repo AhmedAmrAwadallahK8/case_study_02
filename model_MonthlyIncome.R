@@ -239,3 +239,22 @@ for(i in 1:50){
 }
 mean(rms_holder)
 
+#Output Predictions
+library("readxl")
+
+df_comp = read_excel('C:\\Users\\amada\\OneDrive\\Desktop\\RStudioFiles\\Scripts\\SMU\\Term1\\DS6306\\CaseStudy2\\CaseStudy2CompSet_No_Salary.xlsx')
+#Create Output DataFrame
+output = data.frame(ID = df_comp$ID)
+
+#Factored Variable for Model
+df_comp$JobLevelFac = as.factor(df_comp$JobLevel)
+
+#Feature Selection
+fea = c("TotalWorkingYears", "JobLevelFac")
+test_fea = df_comp %>% select(contains(fea))
+
+#Output predictions into DF
+output$MonthlyIncome = predict(fit, test_fea)
+
+#Write to csv
+write.csv(output,'Case2PredictionsAwadallah Salary.csv', row.names = FALSE)
