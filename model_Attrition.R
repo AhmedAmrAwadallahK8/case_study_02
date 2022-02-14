@@ -34,7 +34,6 @@ df_model = df_raw %>% select("Age", "MonthlyIncome", "OverTime", "TotalWorkingYe
                              "StockOptionLevel", "DistanceFromHome", "EnvironmentSatisfaction", "MaritalStatus")
 
 #Adjust OverTime such that its a dummy
-str(df_model)
 df_model$OverTime_Yes = ifelse(df_model$OverTime == "Yes", 1, 0)
 df_model$OverTime_No = ifelse(df_model$OverTime == "No", 1, 0)
 
@@ -60,7 +59,6 @@ df_model_final = df_model %>% select("Age_Norm", "MonthlyIncome_Norm", "TotalWor
                                      "StockOptionLevel_Norm", "DistanceFromHome_Norm", "EnvironmentSatisfaction_Norm",
                                      "MS_Single", "MS_Divorced", "MS_Married", "Attrition")
 
-df_model_final %>% ggplot(aes(x=Attrition)) + geom_bar()
 
 str(df_model_final)
 
@@ -80,20 +78,36 @@ test_data %>% ggplot(aes(x=Attrition)) + geom_bar()
 fea = c("Age_Norm", "MonthlyIncome_Norm", "TotalWorkingYears_Norm", 
         "JobLevel_Norm", "OverTime_Yes", "OverTime_No",
         "StockOptionLevel_Norm", "DistanceFromHome_Norm", "EnvironmentSatisfaction_Norm",
-        "MS_Single", "MS_Divorced", "MS_Married")
+        "MS_Single")
 fea = c("Age_Norm", "MonthlyIncome_Norm", "TotalWorkingYears_Norm", 
         "JobLevel_Norm", "OverTime_Yes", "OverTime_No",
         "StockOptionLevel_Norm", "DistanceFromHome_Norm", "EnvironmentSatisfaction_Norm",
-        "MS_Single")
+        "MS_Single", "MS_Divorced", "MS_Married")
+
 tar = c("Attrition")
 
 #KNN Hyperparameter Tuning
 perc_downsample = 0.8
 rep_upsample = 4
 optimal_k = find_optimal_k2(train_data, fea, tar, 
-               5, 40, split = 0.888,  s_num=30, avg_loop=5, rep_upsample = rep_upsample, perc_downsample = perc_downsample,
+               5, 50, split = 0.888,  s_num=30, avg_loop=5, rep_upsample = rep_upsample, perc_downsample = perc_downsample,
                           title = "K versus Accuracy for KNN Model")
 
+#Randomly Shuffle df
+df_model_final_shuffled = df_model_final[sample(1:nrow(df_model_final)), ]
+
+
+#Split into Train/Validation set and test set 60 20 20 split
+tt_l = train_test_split(df_model_final_shuffled, splitPerc = 0.9)
+
+train_data = tt_l[[1]]
+test_data = tt_l[[2]]
+train_data %>% ggplot(aes(x=Attrition)) + geom_bar()
+test_data %>% ggplot(aes(x=Attrition)) + geom_bar()
+
+perc_downsample = 0.8
+rep_upsample = 4
+optimal_k = 34
 #UpSampling and DownSampling
 
 minority_target = train_data %>% filter(Attrition == "Yes")
@@ -111,7 +125,6 @@ train_fea = train_data2 %>% select(contains(fea))
 train_tar = train_data2 %>% select(contains(tar))
 test_fea = test_data %>% select(contains(fea))
 test_tar = test_data %>% select(contains(tar))
-
 
 #Final KNN Model
 clsf_rep = knn(train_fea[,], test_fea[,], train_tar[,], k=optimal_k, prob = T)
@@ -136,14 +149,15 @@ train_data = tt_l[[1]]
 test_data = tt_l[[2]]
 
 #SPecify Features and Target
-fea = c("Age_Norm", "MonthlyIncome_Norm", "TotalWorkingYears_Norm", 
-        "JobLevel_Norm", "OverTime_Yes", "OverTime_No",
-        "StockOptionLevel_Norm", "DistanceFromHome_Norm", "EnvironmentSatisfaction_Norm",
-        "MS_Single", "MS_Divorced", "MS_Married")
+
 fea = c("Age_Norm", "MonthlyIncome_Norm", "TotalWorkingYears_Norm", 
         "JobLevel_Norm", "OverTime_Yes", "OverTime_No",
         "StockOptionLevel_Norm", "DistanceFromHome_Norm", "EnvironmentSatisfaction_Norm",
         "MS_Single")
+fea = c("Age_Norm", "MonthlyIncome_Norm", "TotalWorkingYears_Norm", 
+        "JobLevel_Norm", "OverTime_Yes", "OverTime_No",
+        "StockOptionLevel_Norm", "DistanceFromHome_Norm", "EnvironmentSatisfaction_Norm",
+        "MS_Single", "MS_Divorced", "MS_Married")
 tar = c("Attrition")
 
 
@@ -153,10 +167,13 @@ tar = c("Attrition")
 perc_downsample = 0.8
 rep_upsample = 4
 optimal_d = find_optimal_depth(train_data, fea, tar, 
-                               2, 20, split = 0.888,  s_num=20, avg_loop=1, rep_upsample = rep_upsample, perc_downsample = perc_downsample,
+                               2, 20, split = 0.888,  s_num=30, avg_loop=5, rep_upsample = rep_upsample, perc_downsample = perc_downsample,
                                title = "K versus Accuracy for Forest Model")
 
 
+perc_downsample = 0.7
+rep_upsample = 4
+optimal_d = 9
 #UpSampling and DownSampling
 
 minority_target = train_data %>% filter(Attrition == "Yes")

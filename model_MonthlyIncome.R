@@ -63,7 +63,7 @@ MI_model_df = MI_model_df_raw %>% select("Age_Norm", "Education_Norm", "JobLevel
                                          "Other", "TechDegree", "MonthlyIncome")
 
 
-
+MI_model_df$JobLevelFac = as.factor(MI_model_df_raw$JobLevel)
 #Split into Train/Validation set and test set 60 20 20 split
 tt_l = train_test_split(MI_model_df, splitPerc = 0.9)
 
@@ -71,13 +71,14 @@ train_data = tt_l[[1]]
 test_data = tt_l[[2]]
 
 #Specify Features and Target
-fea = c("Age_Norm", "JobLevel_Norm", "TotalWorkingYears_Norm")
+fea = c("JobLevel_Norm", "TotalWorkingYears_Norm")
+fea = c("TotalWorkingYears_Norm", "JobLevelFac")
 #Feature Notes
 #Education_Norm Did not provide Statistically significant relationship
 
 
 
-
+str(MI_model_df$JobLevelFac)
 
 tar = c("MonthlyIncome")
 
@@ -90,7 +91,7 @@ train_tar = train_data %>% select(contains(tar))
 test_fea = test_data %>% select(contains(fea))
 test_tar = test_data %>% select(contains(tar))
 
-fit = lm(MonthlyIncome~., data=train)
+fit = lm(MonthlyIncome~TotalWorkingYears_Norm*JobLevelFac, data=train)
 summary(fit)
 test_tar$pred_lm = predict(fit, test_fea)
 test_tar$resid = test_tar$MonthlyIncome - test_tar$pred_lm
@@ -98,4 +99,143 @@ test_tar$resid = test_tar$MonthlyIncome - test_tar$pred_lm
 #RMSE
 sqrt(mean(test_tar$resid^2))
 
+train %>% ggplot(aes(x=TotalWorkingYears_Norm, y=MonthlyIncome, col = JobLevelFac)) + geom_point()
+coef(fit)
+equation1=function(x){coef(fit)[2]*x+coef(fit)[1]}
+equation2=function(x){(coef(fit)[7]+coef(fit)[2])*x+coef(fit)[1]+coef(fit)[3]}
+equation3=function(x){(coef(fit)[8]+coef(fit)[2])*x+coef(fit)[1]+coef(fit)[4]}
+equation4=function(x){(coef(fit)[9]+coef(fit)[2])*x+coef(fit)[1]+coef(fit)[5]}
+equation5=function(x){(coef(fit)[10]+coef(fit)[2])*x+coef(fit)[1]+coef(fit)[6]}
+
+train %>% ggplot(aes(y=MonthlyIncome,x=TotalWorkingYears_Norm,color=JobLevelFac))+geom_point()+
+  stat_function(fun=equation1,geom="line",color=scales::hue_pal()(5)[1])+
+  stat_function(fun=equation2,geom="line",color=scales::hue_pal()(5)[2]) + 
+  stat_function(fun=equation3,geom="line",color=scales::hue_pal()(5)[3]) +
+  stat_function(fun=equation4,geom="line",color=scales::hue_pal()(5)[4]) +
+  stat_function(fun=equation5,geom="line",color=scales::hue_pal()(5)[5]) +
+  ggtitle("Hours v Feet with interaction model")
+
+
 #Fine tune parameters for model, current parameters are sufficient
+MI_model2 = df_raw
+MI_model2$JobLevelFac = as.factor(df_raw$JobLevel)
+tt_l = train_test_split(MI_model2, splitPerc = 0.9)
+
+train_data = tt_l[[1]]
+test_data = tt_l[[2]]
+
+
+#Specify Features and Target
+fea = c("TotalWorkingYears", "JobLevelFac")
+
+tar = c("MonthlyIncome")
+
+
+
+#Setup train and test data
+train = train_data %>% select(contains(fea), contains(tar))
+train_fea = train_data %>% select(contains(fea))
+train_tar = train_data %>% select(contains(tar))
+test_fea = test_data %>% select(contains(fea))
+test_tar = test_data %>% select(contains(tar))
+
+fit = lm(MonthlyIncome~TotalWorkingYears*JobLevelFac, data=train)
+summary(fit)
+test_tar$pred_lm = predict(fit, test_fea)
+test_tar$resid = test_tar$MonthlyIncome - test_tar$pred_lm
+
+#Average RMSE on Test Set
+sqrt(mean(test_tar$resid^2))
+
+equation1=function(x){coef(fit)[2]*x+coef(fit)[1]}
+equation2=function(x){(coef(fit)[7]+coef(fit)[2])*x+coef(fit)[1]+coef(fit)[3]}
+equation3=function(x){(coef(fit)[8]+coef(fit)[2])*x+coef(fit)[1]+coef(fit)[4]}
+equation4=function(x){(coef(fit)[9]+coef(fit)[2])*x+coef(fit)[1]+coef(fit)[5]}
+equation5=function(x){(coef(fit)[10]+coef(fit)[2])*x+coef(fit)[1]+coef(fit)[6]}
+
+train %>% ggplot(aes(y=MonthlyIncome,x=TotalWorkingYears,color=JobLevelFac))+geom_point()+
+  stat_function(fun=equation1,geom="line",color=scales::hue_pal()(5)[1])+
+  stat_function(fun=equation2,geom="line",color=scales::hue_pal()(5)[2]) + 
+  stat_function(fun=equation3,geom="line",color=scales::hue_pal()(5)[3]) +
+  stat_function(fun=equation4,geom="line",color=scales::hue_pal()(5)[4]) +
+  stat_function(fun=equation5,geom="line",color=scales::hue_pal()(5)[5]) +
+  ggtitle("Hours v Feet with interaction model")
+
+#Interactions Actually not significant. Final Version
+#Fine tune parameters for model, current parameters are sufficient
+MI_model3 = df_raw
+MI_model3$JobLevelFac = as.factor(df_raw$JobLevel)
+tt_l = train_test_split(MI_model3, splitPerc = 0.9)
+
+train_data = tt_l[[1]]
+test_data = tt_l[[2]]
+
+
+#Specify Features and Target
+fea = c("TotalWorkingYears", "JobLevelFac")
+
+tar = c("MonthlyIncome")
+
+
+
+#Setup train and test data
+train = train_data %>% select(contains(fea), contains(tar))
+train_fea = train_data %>% select(contains(fea))
+train_tar = train_data %>% select(contains(tar))
+test_fea = test_data %>% select(contains(fea))
+test_tar = test_data %>% select(contains(tar))
+
+fit = lm(MonthlyIncome~TotalWorkingYears + JobLevelFac, data=train)
+summary(fit)
+test_tar$pred_lm = predict(fit, test_fea)
+test_tar$resid = test_tar$MonthlyIncome - test_tar$pred_lm
+
+#Average RMSE on Test Set
+sqrt(mean(test_tar$resid^2))
+
+equation1=function(x){coef(fit)[2]*x+coef(fit)[1]}
+equation2=function(x){(coef(fit)[2])*x+coef(fit)[1]+coef(fit)[3]}
+equation3=function(x){(coef(fit)[2])*x+coef(fit)[1]+coef(fit)[4]}
+equation4=function(x){(coef(fit)[2])*x+coef(fit)[1]+coef(fit)[5]}
+equation5=function(x){(coef(fit)[2])*x+coef(fit)[1]+coef(fit)[6]}
+
+train %>% ggplot(aes(y=MonthlyIncome,x=TotalWorkingYears,color=JobLevelFac))+geom_point()+
+  stat_function(fun=equation1,geom="line",color=scales::hue_pal()(5)[1])+
+  stat_function(fun=equation2,geom="line",color=scales::hue_pal()(5)[2]) + 
+  stat_function(fun=equation3,geom="line",color=scales::hue_pal()(5)[3]) +
+  stat_function(fun=equation4,geom="line",color=scales::hue_pal()(5)[4]) +
+  stat_function(fun=equation5,geom="line",color=scales::hue_pal()(5)[5]) +
+  ggtitle("Hours v Feet with interaction model")
+
+rms_holder = c()
+for(i in 1:50){
+  tt_l = train_test_split(MI_model3, splitPerc = 0.9)
+  
+  train_data = tt_l[[1]]
+  test_data = tt_l[[2]]
+  
+  
+  #Specify Features and Target
+  fea = c("TotalWorkingYears", "JobLevelFac")
+  
+  tar = c("MonthlyIncome")
+  
+  
+  
+  #Setup train and test data
+  train = train_data %>% select(contains(fea), contains(tar))
+  train_fea = train_data %>% select(contains(fea))
+  train_tar = train_data %>% select(contains(tar))
+  test_fea = test_data %>% select(contains(fea))
+  test_tar = test_data %>% select(contains(tar))
+  
+  fit = lm(MonthlyIncome~TotalWorkingYears + JobLevelFac, data=train)
+  summary(fit)
+  test_tar$pred_lm = predict(fit, test_fea)
+  test_tar$resid = test_tar$MonthlyIncome - test_tar$pred_lm
+  
+  #Average RMSE on Test Set
+  rms_holder = c(rms_holder,sqrt(mean(test_tar$resid^2)))
+}
+mean(rms_holder)
+

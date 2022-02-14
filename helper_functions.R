@@ -86,7 +86,7 @@ find_optimal_k2 = function(df, fea, tar, k_min, k_max, split = 0.8,
   
   #Plot 
   plot(k_vals, acc_overall_avg, main = title, type = 'l', col = "#DD1731", 
-       xlab = "K", ylab = "F1", lwd=3)
+       xlab = "K", ylab = "Balanced Accuracy", lwd=3)
   abline(v = optimal_k, col="green", lwd=2)
   
   
@@ -168,7 +168,7 @@ find_optimal_depth = function(df, fea, tar, k_min, k_max, split = 0.8,
   
   #Plot 
   plot(k_vals, acc_overall_avg, main = title, type = 'l', col = "#DD1731", 
-       xlab = "K", ylab = "Accuracy", lwd=3)
+       xlab = "K", ylab = "Balanced Accuracy", lwd=3)
   abline(v = optimal_k, col="green", lwd=2)
   
   
